@@ -1,0 +1,67 @@
+### Visual Studio / .NET ###
+*.sln.user
+*.suo
+*.user
+*.userosscache
+*.slnx.sqlite
+*.slnx.sqlite-shm
+*.slnx.sqlite-wal
+
+# Folders
+.vs/
+[Bb]in/
+[Oo]bj/
+project.lock.json
+
+# Build Results
+[Dd]ebug/
+[Rr]elease/
+[Dd]ebugPublic/
+[Rr]eleasePublic/
+[Ww][Ii][Nn]32/
+[Ww][Ii][Nn]64/
+x64/
+x86/
+
+# Other
+_UpgradeReport.htm
+UpgradeLog*.log
+
+# SQLite Database
+*.db
+*.db-shm
+*.db-wal
+
+### Node.js / React / Vite ###
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+.pnp.cjs
+.pnp.mjs
+.yarn/install-state.gz
+
+# Build output
+dist
+dist-ssr
+.output
+.vite-inspect/
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea
+.vscode/*
+!.vscode/extensions.json
