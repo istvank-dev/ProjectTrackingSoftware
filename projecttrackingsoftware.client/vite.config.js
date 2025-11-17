@@ -50,6 +50,11 @@ export default defineConfig({
             '^/weatherforecast': {
                 target,
                 secure: false
+            },
+            // Added this rule to proxy all auth API calls
+            '^/api': {
+                target,
+                secure: false
             }
         },
         port: parseInt(env.DEV_SERVER_PORT || '63495'),
