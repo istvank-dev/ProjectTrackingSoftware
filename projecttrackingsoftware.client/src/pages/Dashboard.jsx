@@ -16,11 +16,43 @@ const Dashboard = () => {
         }
     };
 
+    const handleLogout = async () => {
+        await logout();
+        // Note: The logout function already handles redirecting via the AuthContext
+        // and the ProtectedRoute will automatically redirect to login
+    };
+
     return (
         <div>
-            <h1>Dashboard</h1>
-            <p>Welcome, {user?.username}!</p>
-            <button onClick={logout} style={{ marginBottom: '20px', backgroundColor: '#d9534f' }}>Logout</button>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px',
+                paddingBottom: '10px',
+                borderBottom: '1px solid #ccc'
+            }}>
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Welcome, {user?.username}! (Role: {user?.role})</p>
+                </div>
+                <button
+                    onClick={handleLogout}
+                    style={{
+                        backgroundColor: '#d9534f',
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                    }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = '#c9302c'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = '#d9534f'}
+                >
+                    Logout
+                </button>
+            </div>
 
             <AuthorizedView>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>

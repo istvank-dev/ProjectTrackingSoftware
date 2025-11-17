@@ -35,9 +35,16 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
-        clearTokens();
-        setUser(null);
+    const logout = async () => {
+        try {
+            await authService.logout();
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Even if the API call fails, clear tokens locally
+            clearTokens();
+        } finally {
+            setUser(null);
+        }
     };
 
     return (

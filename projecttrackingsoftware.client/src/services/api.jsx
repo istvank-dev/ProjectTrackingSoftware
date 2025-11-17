@@ -97,6 +97,18 @@ export const authService = {
         });
     },
 
+    logout: async () => {
+        try {
+            await request(`${API_URL}/logout`, {
+                method: 'POST',
+            });
+        } catch (error) {
+            console.warn('Logout API call failed, but clearing tokens locally:', error);
+        } finally {
+            clearTokens();
+        }
+    },
+
     refreshToken: async (userId, refreshToken) => {
         const data = await request(`${API_URL}/refresh-token`, {
             method: 'POST',

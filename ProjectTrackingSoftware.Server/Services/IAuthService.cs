@@ -10,5 +10,7 @@ namespace ProjectTrackingSoftware.Server.Services
         Task<TokenResponseDto?> LoginAsync(UserDto request);
 
         Task<TokenResponseDto?> RefreshTokensAsync(RefreshTokenRequestDto request);
+
+        Task<Boolean> RevokeTokensAsync(Guid userId);
     }
 }

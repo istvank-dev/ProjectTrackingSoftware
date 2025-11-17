@@ -123,5 +123,22 @@ namespace ProjectTrackingSoftware.Server.Services
 
             return await CreateTokenResponse(user);
         }
+
+        async Task<Boolean> IAuthService.RevokeTokensAsync(Guid userId)
+        {
+            var user = await context.Users.FindAsync(userId);
+
+            if (user is null )
+            {
+                return false;
+            }
+
+            // Clear the refresh token and its expiry
+            user.RefreshToken = null;
+            user.RefershTokenExpiryTime = null;
+
+            await context.SaveChangesAsync();
+            return true;
+        }
     }
 }

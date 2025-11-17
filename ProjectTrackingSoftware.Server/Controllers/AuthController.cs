@@ -71,5 +71,25 @@ namespace ProjectTrackingSoftware.Server.Controllers
             }
             return Ok(result);
         }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            // Get user ID from the claims
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+            {
+                return BadRequest("Invalid user token");
+            }
+
+            var result = await authService.RevokeTokensAsync(userId);
+            if (!result)
+            {
+                return BadRequest("Failed to revoke tokens");
+            }
+
+            return Ok(new { message = "Successfully logged out" });
+        }
     }
 }
