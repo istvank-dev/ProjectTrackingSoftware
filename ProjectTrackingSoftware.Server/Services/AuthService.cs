@@ -94,7 +94,7 @@ namespace ProjectTrackingSoftware.Server.Services
         {
             var refreshToken = GenerateRefreshToken();
             user.RefreshToken = refreshToken;
-            user.RefershTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await context.SaveChangesAsync();
             return refreshToken;
         }
@@ -104,7 +104,7 @@ namespace ProjectTrackingSoftware.Server.Services
             var user = await context.Users.FindAsync(userId);
             if(user is null ||
                 user.RefreshToken != refreshToken ||
-                user.RefershTokenExpiryTime <=  DateTime.UtcNow)
+                user.RefreshTokenExpiryTime <=  DateTime.UtcNow)
             {
                 return null;
             }
@@ -135,7 +135,7 @@ namespace ProjectTrackingSoftware.Server.Services
 
             // Clear the refresh token and its expiry
             user.RefreshToken = null;
-            user.RefershTokenExpiryTime = null;
+            user.RefreshTokenExpiryTime = null;
 
             await context.SaveChangesAsync();
             return true;

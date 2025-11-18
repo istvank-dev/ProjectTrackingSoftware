@@ -13,6 +13,8 @@
 
         public string? RefreshToken { get; set; }
 
-        public DateTime? RefershTokenExpiryTime { get; set; }
+        public DateTime? RefreshTokenExpiryTime { get; set; }
+
+        public ICollection<Project> Projects { get; set; }
     }
 }
