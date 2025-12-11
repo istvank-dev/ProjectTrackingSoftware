@@ -1,7 +1,27 @@
-import React, { useState } from "react";
-import { authService } from "../services/api";
+import React, { useState, useEffect } from "react";
+import { authService, taskService } from "../services/api";
 import AuthorizedView from "../components/AuthorizedView";
 import { useAuth } from "../context/AuthContext";
+
+// Simple inline styles (your existing modalStyles object)
+const modalStyles = {
+  backdrop: {
+    position: "fixed",
+    inset: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2000,
+  },
+  modal: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 4,
+    minWidth: 300,
+    maxWidth: 500,
+  },
+};
 
 // Modal for editing tasks
 const TaskEditModal = ({ task, onSave, onClose }) => {
@@ -48,6 +68,24 @@ const Dashboard = () => {
   const { user, logout } = useAuth();
   const [response, setResponse] = useState(null);
 
+  const [tasks, setTasks] = useState({});
+  const [columns, setColumns] = useState({
+    "col-1": { id: "col-1", title: "To Do", taskIds: [], visible: true },
+    "col-2": {
+      id: "col-2",
+      title: "In Progress",
+      taskIds: [],
+      visible: true,
+    },
+    "col-3": { id: "col-3", title: "Done", taskIds: [], visible: true },
+  });
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [newTaskContent, setNewTaskContent] = useState("");
+  const [selectedColumnToAdd, setSelectedColumnToAdd] = useState("col-1");
+  const [newColumnTitle, setNewColumnTitle] = useState("");
+  const [editingTask, setEditingTask] = useState(null);
+
   const handleApiCall = async (apiFunc, name) => {
     try {
       const data = await apiFunc();
@@ -59,105 +97,181 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     await logout();
-    // Note: The logout function already handles redirecting via the AuthContext
-    // and the ProtectedRoute will automatically redirect to login
   };
 
-  const [columns, setColumns] = useState({
-    "col-1": {
-      id: "col-1",
-      title: "To Do",
-      taskIds: ["task-1", "task-2"],
-      visible: true,
-    },
-    "col-2": {
-      id: "col-2",
-      title: "In Progress",
-      taskIds: ["task-3"],
-      visible: true,
-    },
-    "col-3": { id: "col-3", title: "Done", taskIds: [], visible: true },
-  });
+  // Load tasks on mount
+  useEffect(() => {
+    loadTasks();
+  }, []);
 
-  const [tasks, setTasks] = useState({
-    "task-1": { id: "task-1", content: "Buy groceries", description: "" },
-    "task-2": { id: "task-2", content: "Walk the dog", description: "" },
-    "task-3": { id: "task-3", content: "Write blog post", description: "" },
-  });
+  const loadTasks = async () => {
+    try {
+      const apiTasks = await taskService.getAllTasks();
+      const taskMap = {};
+      const colTaskIds = { "col-1": [], "col-2": [], "col-3": [] };
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [newTaskContent, setNewTaskContent] = useState("");
-  const [selectedColumnToAdd, setSelectedColumnToAdd] = useState("col-1");
-  const [newColumnTitle, setNewColumnTitle] = useState("");
-  const [editingTask, setEditingTask] = useState(null);
+      apiTasks.forEach((task) => {
+        const taskId = task.id;
+        const ColumnIndex = task.ColumnIndex ?? 0;
+
+        taskMap[taskId] = {
+          id: taskId,
+          content: task.ProjectName || task.content,
+          description: task.description || "",
+          ColumnIndex,
+        };
+
+        const colKey = `col-${ColumnIndex + 1}`;
+        if (colTaskIds[colKey]) colTaskIds[colKey].push(taskId);
+      });
+
+      setTasks(taskMap);
+      setColumns((prev) => ({
+        ...prev,
+        "col-1": { ...prev["col-1"], taskIds: colTaskIds["col-1"] || [] },
+        "col-2": { ...prev["col-2"], taskIds: colTaskIds["col-2"] || [] },
+        "col-3": { ...prev["col-3"], taskIds: colTaskIds["col-3"] || [] },
+      }));
+    } catch (error) {
+      console.error("Failed to load tasks:", error);
+    }
+  };
 
   // Add task
-  const addTask = () => {
-    if (!newTaskContent.trim()) return;
-    const id = "task-" + Date.now();
+  const addTask = async () => {
+  if (!newTaskContent.trim()) return;
+  try {
+    const ColumnIndex = parseInt(selectedColumnToAdd.replace("col-", "")) - 1;
+    const newTask = {
+      ProjectName: newTaskContent,
+      description: "",
+      ColumnIndex,
+    };
+
+    // Wait for full response with id
+    const createdTask = await taskService.createTask(newTask);
+    
+    // Defensive check - log if task is missing expected fields
+    console.log('Created task:', createdTask);
+    
+    if (!createdTask?.id) {
+      throw new Error('Created task missing id');
+    }
+
+    // Update tasks FIRST with complete data
     setTasks((prev) => ({
       ...prev,
-      [id]: { id, content: newTaskContent, description: "" },
+      [createdTask.id]: {
+        id: createdTask.id,
+        content: createdTask.ProjectName || newTaskContent, // fallback
+        description: createdTask.description || "",
+        ColumnIndex: createdTask.ColumnIndex ?? ColumnIndex,
+      },
     }));
-    setColumns((prev) => {
-      const col = prev[selectedColumnToAdd];
-      return {
-        ...prev,
-        [selectedColumnToAdd]: { ...col, taskIds: [...col.taskIds, id] },
-      };
-    });
+
+    // Then update columns
+    setColumns((prev) => ({
+      ...prev,
+      [selectedColumnToAdd]: {
+        ...prev[selectedColumnToAdd],
+        taskIds: [...prev[selectedColumnToAdd].taskIds, createdTask.id],
+      },
+    }));
+
     setNewTaskContent("");
-  };
+  } catch (error) {
+    console.error("Failed to add task:", error);
+  }
+};
+
 
   // Remove task
-  const removeTask = (taskId) => {
-    setTasks((prev) => {
-      const copy = { ...prev };
-      delete copy[taskId];
-      return copy;
-    });
-    setColumns((prev) =>
-      Object.fromEntries(
-        Object.entries(prev).map(([colId, col]) => [
-          colId,
-          { ...col, taskIds: col.taskIds.filter((id) => id !== taskId) },
-        ])
-      )
-    );
+  const removeTask = async (taskId) => {
+    try {
+      await taskService.deleteTask(taskId);
+
+      setTasks((prev) => {
+        const copy = { ...prev };
+        delete copy[taskId];
+        return copy;
+      });
+
+      setColumns((prev) =>
+        Object.fromEntries(
+          Object.entries(prev).map(([colId, col]) => [
+            colId,
+            { ...col, taskIds: col.taskIds.filter((id) => id !== taskId) },
+          ]),
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+    }
   };
 
-  // Move task left or right between columns
+  // Move task left or right between columns, and persist ColumnIndex
   const moveTask = (taskId, direction) => {
     const colIds = Object.keys(columns);
     const currentColId = colIds.find((colId) =>
-      columns[colId].taskIds.includes(taskId)
+      columns[colId].taskIds.includes(taskId),
     );
     const idx = colIds.indexOf(currentColId);
-    const newIdx = idx + direction; // direction: -1 for left, +1 for right
+    const newIdx = idx + direction;
     if (newIdx < 0 || newIdx >= colIds.length) return;
+
+    const newColId = colIds[newIdx];
 
     setColumns((prev) => {
       const sourceCol = prev[currentColId];
-      const targetCol = prev[colIds[newIdx]];
+      const targetCol = prev[newColId];
       return {
         ...prev,
         [currentColId]: {
           ...sourceCol,
           taskIds: sourceCol.taskIds.filter((id) => id !== taskId),
         },
-        [colIds[newIdx]]: {
+        [newColId]: {
           ...targetCol,
           taskIds: [...targetCol.taskIds, taskId],
         },
       };
+    });
+
+    setTasks((prev) => {
+      const updated = {
+        ...prev[taskId],
+        ColumnIndex: newIdx,
+      };
+
+      // persist move
+      taskService
+        .updateTask(taskId, {
+          ProjectName: updated.content,
+          description: updated.description,
+          ColumnIndex: newIdx,
+        })
+        .catch((err) => console.error("Failed to move task:", err));
+
+      return { ...prev, [taskId]: updated };
     });
   };
 
   // Edit task handlers
   const openEditModal = (task) => setEditingTask(task);
   const closeEditModal = () => setEditingTask(null);
-  const saveTaskChanges = (updatedTask) => {
-    setTasks((prev) => ({ ...prev, [updatedTask.id]: updatedTask }));
+
+  const saveTaskChanges = async (updatedTask) => {
+    try {
+      const taskData = {
+        ProjectName: updatedTask.content,
+        description: updatedTask.description,
+        ColumnIndex: updatedTask.ColumnIndex ?? 0,
+      };
+      await taskService.updateTask(updatedTask.id, taskData);
+      setTasks((prev) => ({ ...prev, [updatedTask.id]: updatedTask }));
+    } catch (error) {
+      console.error("Failed to update task:", error);
+    }
     closeEditModal();
   };
 
@@ -279,7 +393,7 @@ const Dashboard = () => {
           flexDirection: "column",
         }}
       >
-        {/* Container wrapping Hamburger menu and Add new task side by side */}
+        {/* Menu + Add task row */}
         <div
           style={{
             display: "flex",
@@ -370,6 +484,7 @@ const Dashboard = () => {
               display: "flex",
               gap: 10,
               alignItems: "center",
+              flex: 1,
             }}
           >
             <input
@@ -485,7 +600,9 @@ const Dashboard = () => {
                         </button>
                         <button
                           onClick={() => moveTask(task.id, 1)}
-                          disabled={colIds.indexOf(colId) === colIds.length - 1}
+                          disabled={
+                            colIds.indexOf(colId) === colIds.length - 1
+                          }
                           aria-label="Move task right"
                         >
                           ►

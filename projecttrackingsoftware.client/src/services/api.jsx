@@ -80,6 +80,56 @@ async function request(endpoint, options = {}) {
     }
 }
 
+export const taskService = {
+  async createTask(taskData) {
+    const token = getAccessToken();
+    const response = await fetch('/api/task', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(taskData)
+    });
+    if (!response.ok) throw new Error('Failed to create task');
+    return response.json();
+  },
+
+  async getAllTasks() {
+    const token = localStorage.getItem('token');
+    const response = await fetch('/api/task', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to fetch tasks');
+    return response.json();
+  },
+
+  async updateTask(id, taskData) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/task/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(taskData)
+    });
+    if (!response.ok) throw new Error('Failed to update task');
+    return response.json();
+  },
+
+  async deleteTask(id) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/task/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to delete task');
+    return response.ok;
+  }
+};
+
+
 export const authService = {
     login: async (username, password) => {
         const data = await request(`${API_URL}/login`, {

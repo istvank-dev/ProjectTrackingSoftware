@@ -2,9 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using ProjectTrackingSoftware.Server.Entities;
 using ProjectTrackingSoftware.Server.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ProjectTrackingSoftware.Server.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class TaskController : ControllerBase
@@ -55,6 +57,7 @@ namespace ProjectTrackingSoftware.Server.Controllers
             if(existing == null) return NotFound();
 
             existing.ProjectName = task.ProjectName;
+            existing.ColumnIndex = task.ColumnIndex;
 
             _context.SaveChanges();
             return Ok(existing);
