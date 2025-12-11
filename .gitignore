@@ -65,3 +65,13 @@ dist-ssr
 .idea
 .vscode/*
 !.vscode/extensions.json
+package-lock.json
+package.json
+projecttrackingsoftware.client/projecttrackingsoftware.client.esproj
+ProjectTrackingSoftware.Server/Migrations/20251211185353_AddTasksTable.cs
+ProjectTrackingSoftware.Server/Migrations/20251211185353_AddTasksTable.Designer.cs
+ProjectTrackingSoftware.Server/Migrations/20251211191114_AddColumnIndexToTasks.cs
+ProjectTrackingSoftware.Server/Migrations/20251211191114_AddColumnIndexToTasks.Designer.cs
+ProjectTrackingSoftware.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+ProjectTrackingSoftware.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+projecttrackingsoftware.client/projecttrackingsoftware.client.esproj

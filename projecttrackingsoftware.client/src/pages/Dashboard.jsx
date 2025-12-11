@@ -107,21 +107,22 @@ const Dashboard = () => {
   const loadTasks = async () => {
     try {
       const apiTasks = await taskService.getAllTasks();
+      console.log(apiTasks)
       const taskMap = {};
       const colTaskIds = { "col-1": [], "col-2": [], "col-3": [] };
 
       apiTasks.forEach((task) => {
         const taskId = task.id;
-        const ColumnIndex = task.ColumnIndex ?? 0;
+        const columnIndex = task.columnIndex ?? 0;
 
         taskMap[taskId] = {
           id: taskId,
-          content: task.ProjectName || task.content,
+          content: task.projectName || task.content,
           description: task.description || "",
-          ColumnIndex,
+          ColumnIndex: task.columnIndex,
         };
 
-        const colKey = `col-${ColumnIndex + 1}`;
+        const colKey = `col-${columnIndex + 1}`;
         if (colTaskIds[colKey]) colTaskIds[colKey].push(taskId);
       });
 
@@ -246,12 +247,11 @@ const Dashboard = () => {
       // persist move
       taskService
         .updateTask(taskId, {
-          ProjectName: updated.content,
+          projectName: updated.content,
           description: updated.description,
-          ColumnIndex: newIdx,
+          columnIndex: newIdx,
         })
         .catch((err) => console.error("Failed to move task:", err));
-
       return { ...prev, [taskId]: updated };
     });
   };

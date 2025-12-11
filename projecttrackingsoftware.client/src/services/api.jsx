@@ -96,7 +96,7 @@ export const taskService = {
   },
 
   async getAllTasks() {
-    const token = localStorage.getItem('token');
+    const token = getAccessToken();
     const response = await fetch('/api/task', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -105,7 +105,7 @@ export const taskService = {
   },
 
   async updateTask(id, taskData) {
-    const token = localStorage.getItem('token');
+    const token = getAccessToken();
     const response = await fetch(`/api/task/${id}`, {
       method: 'PUT',
       headers: {
@@ -119,7 +119,7 @@ export const taskService = {
   },
 
   async deleteTask(id) {
-    const token = localStorage.getItem('token');
+    const token = getAccessToken();
     const response = await fetch(`/api/task/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
