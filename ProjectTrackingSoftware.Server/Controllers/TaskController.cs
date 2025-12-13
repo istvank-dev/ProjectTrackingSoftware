@@ -20,13 +20,20 @@ namespace ProjectTrackingSoftware.Server.Controllers
 
         //POST: api/task
         [HttpPost]
-        public async Task<IActionResult> Create(TaskEntity task)
+        public async Task<IActionResult> Create(TaskDto task)
         {
             if (task == null || string.IsNullOrWhiteSpace(task.ProjectName))
                 return BadRequest("Task name is required");
 
-            task.Id = Guid.NewGuid();
-            _context.Tasks.Add(task);
+            var project = _context.Projects
+                                .FirstOrDefault(x => x.Id == task.ProjectId);
+
+            if (project == null) return NotFound();
+
+            var id = Guid.NewGuid();
+            var newTask = new TaskEntity() { Id = id, ProjectId = project.Id, ColumnIndex = 0, ProjectName = task.ProjectName };
+            //project.Tasks.Add(newTask);
+            _context.Tasks.Add(newTask);
             _context.SaveChanges();
             return Ok(task);
         }
@@ -75,5 +82,7 @@ namespace ProjectTrackingSoftware.Server.Controllers
 
             return NoContent();
         }
+
+
     }
 }

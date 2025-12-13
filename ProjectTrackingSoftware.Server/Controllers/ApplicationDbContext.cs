@@ -7,5 +7,6 @@ namespace ProjectTrackingSoftware.Server.Controllers
     {
         public DbSet<User> Users { get; set; }
         public DbSet<TaskEntity> Tasks { get; set; }
+        public DbSet<Project> Projects { get; set; }
     }
 }
