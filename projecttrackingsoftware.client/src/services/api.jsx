@@ -81,54 +81,96 @@ async function request(endpoint, options = {}) {
 }
 
 export const taskService = {
-  async createTask(taskData) {
-    const token = getAccessToken();
-    const response = await fetch('/api/task', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(taskData)
-    });
-    if (!response.ok) throw new Error('Failed to create task');
-    return response.json();
-  },
+    async createTask(taskData) {
+        const token = getAccessToken();
+        const response = await fetch('/api/task', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(taskData)
+        });
+        if (!response.ok) throw new Error('Failed to create task');
+        return response.json();
+    },
 
-  async getAllTasks() {
-    const token = getAccessToken();
-    const response = await fetch('/api/task', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!response.ok) throw new Error('Failed to fetch tasks');
-    return response.json();
-  },
+    async getAllTasks() {
+        const token = getAccessToken();
+        const response = await fetch('/api/task', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch tasks');
+        return response.json();
+    },
 
-  async updateTask(id, taskData) {
-    const token = getAccessToken();
-    const response = await fetch(`/api/task/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(taskData)
-    });
-    if (!response.ok) throw new Error('Failed to update task');
-    return response.json();
-  },
+    async updateTask(id, taskData) {
+        const token = getAccessToken();
+        const response = await fetch(`/api/task/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(taskData)
+        });
+        if (!response.ok) throw new Error('Failed to update task');
+        return response.json();
+    },
 
-  async deleteTask(id) {
-    const token = getAccessToken();
-    const response = await fetch(`/api/task/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!response.ok) throw new Error('Failed to delete task');
-    return response.ok;
-  }
+    async deleteTask(id) {
+        const token = getAccessToken();
+        const response = await fetch(`/api/task/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to delete task');
+        return response.ok;
+    }
 };
 
+export const projectService = {
+
+    // Gets all the projects that the user is part of
+    getAll: async () => {
+        const token = getAccessToken();
+        const response = await fetch('/api/project', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch Projects');
+        return response.json();
+    },
+
+    // Creates a new project
+    // returns the project the same way getOneProject does
+    // New project data (name + columnCount) ProjectDto on the backend
+    createProject: async (projectData) => {
+        const token = getAccessToken();
+        const response = await fetch('/api/project', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(projectData)
+        });
+        if (!response.ok) throw new Error('Failed to create task');
+        return response.json();
+    },
+
+    // TODO dashboard component should get the tasks from this request not the getAllTasks one
+    // gets one project
+    // tasks array contains the tasks that need to be shown on the dashboard
+    // needs project Id
+    getOneProject: async (id) => {
+        const token = getAccessToken();
+        const response = await fetch(`/api/project/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch Projects');
+        return response.json();
+    },
+}
 
 export const authService = {
     login: async (username, password) => {

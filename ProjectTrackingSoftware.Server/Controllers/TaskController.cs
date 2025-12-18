@@ -58,11 +58,12 @@ namespace ProjectTrackingSoftware.Server.Controllers
 
         //PUT: api/task/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, TaskEntity task)
+        public async Task<IActionResult> Update(Guid id, TaskPutDto task)
         {
             var existing = _context.Tasks.FirstOrDefault(x => x.Id == id);
             if(existing == null) return NotFound();
 
+            existing.ProjectId = task.ProjectId;
             existing.ProjectName = task.ProjectName;
             existing.ColumnIndex = task.ColumnIndex;
 
@@ -84,5 +85,13 @@ namespace ProjectTrackingSoftware.Server.Controllers
         }
 
 
+    }
+
+    public class TaskPutDto
+    {
+        public Guid Id { get; set; }
+        public string ProjectName { get; set; }
+        public int ColumnIndex { get; set; } = 0;
+        public Guid ProjectId { get; set; }
     }
 }

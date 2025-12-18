@@ -36,7 +36,9 @@ namespace ProjectTrackingSoftware.Server.Controllers
                                     Completetion = p.Completetion,
                                     Tasks = p.Tasks.Select(t => new  { 
                                         t.Id,
-                                        t.ProjectName
+                                        t.ProjectName,
+                                        t.ColumnIndex
+
                                     }),
                                     Users = p.Users.Select(p => p.Username)
                                 })

@@ -65,6 +65,9 @@ const TaskEditModal = ({ task, onSave, onClose }) => {
 };
 
 const Dashboard = () => {
+
+  //TODO project id from projects page
+  const projectId  = "8216c996-f795-4b71-9473-88d83f37dc81"
   const { user, logout } = useAuth();
   const [response, setResponse] = useState(null);
 
@@ -106,6 +109,8 @@ const Dashboard = () => {
 
   const loadTasks = async () => {
     try {
+      // TODO should get the tasks from the project
+      // might not need an API call only the tasks field of the project details
       const apiTasks = await taskService.getAllTasks();
       console.log(apiTasks)
       const taskMap = {};
@@ -145,6 +150,7 @@ const Dashboard = () => {
     const ColumnIndex = parseInt(selectedColumnToAdd.replace("col-", "")) - 1;
     const newTask = {
       ProjectName: newTaskContent,
+      projectId: projectId,
       description: "",
       ColumnIndex,
     };
@@ -248,6 +254,7 @@ const Dashboard = () => {
       taskService
         .updateTask(taskId, {
           projectName: updated.content,
+          projectId: projectId,
           description: updated.description,
           columnIndex: newIdx,
         })
@@ -264,6 +271,7 @@ const Dashboard = () => {
     try {
       const taskData = {
         ProjectName: updatedTask.content,
+        projectId: projectId,
         description: updatedTask.description,
         ColumnIndex: updatedTask.ColumnIndex ?? 0,
       };
