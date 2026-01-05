@@ -14,5 +14,11 @@
         public string? RefreshToken { get; set; }
 
         public DateTime? RefershTokenExpiryTime { get; set; }
+
+        // Connections
+
+        public ICollection<TaskEntity> AssignedTasks { get; set; } = [];
+
+        public ICollection<Project> Projects { get; set; } = [];
     }
 }

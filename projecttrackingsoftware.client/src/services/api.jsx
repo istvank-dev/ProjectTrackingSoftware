@@ -67,7 +67,7 @@ async function request(endpoint, options = {}) {
             const errorJson = JSON.parse(errorText);
             throw new Error(errorJson.title || "Request failed");
         } catch (e) {
-            throw new Error(errorText || `Error ${response.status}`);
+            throw new Error(e || `Error ${response.status}`);
         }
     }
 
@@ -78,6 +78,250 @@ async function request(endpoint, options = {}) {
     } else {
         return response.text();
     }
+}
+
+export const taskService = {
+    async createTaskRaw(projectId, projectName) {
+        const token = getAccessToken();
+
+        console.log(" createTaskRaw CALLED");
+        console.log(" URL:", "/api/Task");
+
+        const response = await fetch("/api/Task", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                projectId,
+                projectName,
+            }),
+        });
+
+        console.log(" STATUS:", response.status);
+
+        const text = await response.text();
+        console.log(" RESPONSE BODY:", text);
+
+        if (!response.ok) {
+            throw new Error(text);
+        }
+
+        return JSON.parse(text);
+    },
+    async createTask(taskData) {
+        const token = getAccessToken();
+        const response = await fetch('/api/Task', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                projectId: taskData.projectId,
+                projectName: taskData.projectName,
+            })
+        });
+        console.log("Creating task for project:", taskData.projectId);
+        if (!response.ok) {
+            const text = await response.text();
+            console.error("CreateTask failed:", response.status, text);
+            throw new Error(text || 'Failed to create task');
+        }
+        return response.json();
+    },
+
+    async getAllTasks() {
+        const token = getAccessToken();
+        const response = await fetch('/api/Task', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch tasks');
+        return response.json();
+    },
+
+    async updateTask(id, taskData) {
+        const token = getAccessToken();
+        const response = await fetch(`/api/Task/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(taskData)
+        });
+        if (!response.ok) throw new Error('Failed to update task');
+        return response.json();
+    },
+
+    async deleteTask(id) {
+        const token = getAccessToken();
+        const response = await fetch(`/api/Task/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to delete task');
+        return response.ok;
+    },
+    ping: async () => {
+        const token = getAccessToken();
+        const response = await fetch("/api/Task/ping", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) throw new Error("Ping failed");
+        return response.text();
+    },
+    postTest: async () => {
+        const token = getAccessToken();
+
+        const response = await fetch("/api/Task", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                message: "hello from frontend"
+            }),
+        });
+
+        console.log("RAW RESPONSE OBJECT:", response);
+
+        let bodyText;
+        try {
+            bodyText = await response.text();
+        } catch (e) {
+            console.warn(e);
+            bodyText = "<could not read response body>";
+        }
+
+        console.log("STATUS:", response.status);
+        console.log("BODY TEXT:", bodyText);
+
+        if (!response.ok) {
+            // THIS guarantees we throw the actual text
+            throw new Error(bodyText || "Unknown server error");
+        }
+
+        return bodyText;
+    },
+    async  pingTaskController() {
+            const response = await fetch("/api/Task/ping", {
+                method: "GET",
+            });
+
+    if (!response.ok) {
+        throw new Error("Ping failed");
+    }
+
+    return response.text();
+    }
+
+};
+
+export const projectService = {
+
+    // Gets all the projects that the user is part of
+    getAll: async () => {
+        const token = getAccessToken();
+        const response = await fetch('/api/project', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch Projects');
+        return response.json();
+    },
+
+    // Creates a new project
+    // returns the project the same way getOneProject does
+    // New project data (name + columnCount) ProjectDto on the backend
+    createProject: async (projectData) => {
+        const token = getAccessToken();
+        const response = await fetch('/api/project', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(projectData)
+        });
+        if (!response.ok) {
+            const text = await response.text();
+            console.error("CreateProject failed:", response.status, text);
+            throw new Error(text || 'Failed to create project');
+        }
+        return response.json();
+    },
+
+    // TODO dashboard component should get the tasks from this request not the getAllTasks one
+    // gets one project
+    // tasks array contains the tasks that need to be shown on the dashboard
+    // needs project Id
+    getOneProject: async (id) => {
+        const token = getAccessToken();
+        const response = await fetch(`/api/project/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch Projects');
+        return response.json();
+    },
+
+    leaveProject: async (projectId) => {
+        const token = getAccessToken();
+        const response = await fetch(`/api/project/${projectId}/leave`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || "Failed to leave project");
+        }
+    },
+    addColumn: async (projectId, name) => {
+        const token = getAccessToken();
+        const response = await fetch(`/api/project/${projectId}/columns`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ name }),
+        });
+        console.log("Sent message to the backend");
+        if (!response.ok) {
+            const text = await response.text();
+
+            throw new Error(text || "Failed to add column");
+        }
+
+        return response.json(); // returns columnNames
+    },
+    inviteUser: async (projectId, username) => {
+        const token = getAccessToken();
+        const response = await fetch(`/api/project/${projectId}/invite`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ name: username }),
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || "Failed to invite user");
+        }
+
+        return response.json(); // usernames
+    },
+
+
 }
 
 export const authService = {
